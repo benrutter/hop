@@ -1,4 +1,4 @@
-# pacer
+# Pacer
 Pacer is an installation free, python-written terminal based file explorer with support for windows/unix
 
 ![screenshot](https://github.com/houseofleft/pacer/blob/master/pacer_scrot.png)
