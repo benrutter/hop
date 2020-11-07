@@ -1,4 +1,4 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DIR=${DIR%/unix}
-DIR+="/pacer.py"
+DIR+="/hop.py"
 python $DIR

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+### module imports
 import os
 import sys
 import shutil
@@ -8,13 +9,10 @@ if os.name == 'nt':
 else:
     from getch import getch
 
-banner1 = r"    ____"
-banner2 = r"   / __ \____ _________  _____"
-banner3 = r"  / /_/ / __ '/ __/ _  \/  __/"
-banner4 = r" / ____/ /_/ / /__   __/ /"
-banner5 = r"/_/    \__~_/\___/\___/_/"
-banner = [banner1,banner2,banner3,banner4,banner5]
 
+### global variables
+
+show_help = False
 hidden = True
 selected = 0
 selection = []
@@ -26,13 +24,21 @@ if os.name == 'nt':
 else:
     splitter = '/'
 
-def run_environment(function_mapping, exit_feature=True):
+banner_segment_1 = '┬ ┬┌─┐┌─┐'
+banner_segment_2 = '├─┤│ │├─┘'
+banner_segment_3 = '┴ ┴└─┘┴  '
+banner_segments = [banner_segment_1, banner_segment_2, banner_segment_3]
+
+
+### function definitions
+
+def run_environment(function_mapping):
     while True:
         key = ord(getch())
-        if key == 27 and exit_feature:
-            break
-        elif key in function_mapping:
+        if key in function_mapping:
             function_mapping[key]()
+        else:
+            print(key)
 
 def clear():
     if os.name == 'nt':
@@ -61,10 +67,12 @@ def show_menu():
     col_size = max(37, int((term_columns/3)-len(margin)-3))
 
     clear()
-
-    for b in banner:
-        print(margin + b)
-    print('{}Pacer is a console based file browser.\n{}Vim keys: move, a: console command, s: pacer command\n{}f: select, d: clear, .: hidden, q: quit'.format(margin,margin,margin))
+    for banner_segment in banner_segments:
+        print('{}{}'.format(margin,banner_segment))
+    if show_help:
+        print('{}h, j, k & l to move\n{}console commands with a, pacer commands with s\n{}select files with f and clear with d\n{}show hidden files with . and hide help with #\n{}quit with q'.format(margin,margin,margin,margin,margin,margin))
+    else:
+        print('{}# for help'.format(margin))
     print(line)
 
     ### directory_list
@@ -256,10 +264,18 @@ def exec_pacer():
         print(' No action taken')
     show_menu()
 
-def switch_hidden():
+def toggle_hidden():
     global hidden
     hidden = not hidden
     show_menu()
+
+def toggle_show_help():
+    global show_help
+    show_help = not show_help
+    show_menu()
+
+
+### key mappings and running environment
 
 key_mapping = {
     106: lambda: move(1),
@@ -271,8 +287,9 @@ key_mapping = {
     102: select,
     100: clear_selection,
     113: quit,
-    46: switch_hidden
+    46: toggle_hidden,
+    35: toggle_show_help
 }
 
 show_menu()
-run_environment(key_mapping, exit_feature=False)
+run_environment(key_mapping)
