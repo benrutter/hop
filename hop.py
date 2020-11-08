@@ -37,8 +37,6 @@ def run_environment(function_mapping):
         key = ord(getch())
         if key in function_mapping:
             function_mapping[key]()
-        else:
-            print(key)
 
 def clear():
     if os.name == 'nt':
