@@ -1,22 +1,33 @@
-# HOP
-Hop is an installation free, python-written terminal based file explorer with support for windows/unix
+# Hop!
+Hop is a python-written terminal based file explorer with support for windows/unix
 
 ![readme_files/screenshot](https://github.com/houseofleft/pacer/blob/master/hop_scrot.png)
 
-## Setting up
-The central requirement for running Hop is python 3 (if you're on a linux system, you'll also need to pip install getch)
+## Use
+Once Hop installed, it can be ran at any point in the terminal by typing 'hop' - this will bring you into the file explorer.
 
-If you want to run from the terminal anywhere, you may want to add either the "unix" or "windows" folder to path, which will allow you to run by typing "hop" in the terminal
+Press "#" if you need help with the controls, but the controls are:
 
-## Unix
-Add to path using the following command:
-    export PATH=/home/you/wherever/you/saved/this/hop/unix:$PATH
+**h, j, k, l (vim keys)** to move around folders
+**f** will add the current file/folder to your selection
+**d** will clear your selection
+**s** will run a Hop command (move, copy, delete) on your selection
+**a** to enter shell prompt *(this will let you run any commands normally allowed in your shell such as "vim new_file.txt" or "grep something")*
+**.** will toggle whether hidden (dot files) are shown
+**q** will exit hop and bring you back to the terminal
 
-(You may also need to allow the file to execute with "chmod +x hop")
 
-## Windows
-Adding to path in windows is a little bit (but not too much) more complicated.
+## Installation
+The only requirement for running Hop is python. It can be installed with pip, if you're installing through windows run:
+```
+python -m pip install hop
+```
+Unix systems have an additional requirement (the getch module) so can be installed for with:
+```
+python -m pip install hop[unix]
+```
+or if required (for some setups, this might be needed to allow a runnable command line script
+```
+sudo python -m pip install hop[unix]
+```
 
-Firstly, you'll need to edit the hop.bat file inside the 'hop/windows' folder to reference your python source location and the location you cloned this repo to,
-
-After that you can add the path by modifying your 'environment variables' (search for this term in the start menu)

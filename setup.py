@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='hop-file-browser',
-    version='1.0.1',
+    version='1.0.2',
     author='hop by benrruter + pip installation script by Elsoleiro',
     description='Python-written terminal based file explorer with support for windows/unix',
     url='https://github.com/benrrutter/hop',
