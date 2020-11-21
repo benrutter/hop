@@ -32,7 +32,7 @@ Unix systems have an additional requirement (the getch module) so can be install
 ```
 python -m pip install hop[unix]
 ```
-or if required (for some setups, this might be needed to allow a runnable command line script
+or if required (for some setups, this might be needed to allow a runnable command line script)
 ```
 sudo python -m pip install hop[unix]
 ```
