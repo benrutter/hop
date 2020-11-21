@@ -9,11 +9,17 @@ Once Hop installed, it can be ran at any point in the terminal by typing 'hop' -
 Press "#" if you need help with the controls, but the controls are:
 
 **h, j, k, l (vim keys)** to move around folders
+
 **f** will add the current file/folder to your selection
+
 **d** will clear your selection
+
 **s** will run a Hop command (move, copy, delete) on your selection
+
 **a** to enter shell prompt *(this will let you run any commands normally allowed in your shell such as "vim new_file.txt" or "grep something")*
+
 **.** will toggle whether hidden (dot files) are shown
+
 **q** will exit hop and bring you back to the terminal
 
 
