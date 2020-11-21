@@ -26,14 +26,14 @@ Press "#" if you need help with the controls, but the controls are:
 ## Installation
 The only requirement for running Hop is python. It can be installed with pip, if you're installing through windows run:
 ```
-python -m pip install hop
+python -m pip install hop-file-browser
 ```
 Unix systems have an additional requirement (the getch module) so can be installed for with:
 ```
-python -m pip install hop[unix]
+python -m pip install hop-file-browser[unix]
 ```
 or if required (for some setups, this might be needed to allow a runnable command line script)
 ```
-sudo python -m pip install hop[unix]
+sudo python -m pip install hop-file-browser[unix]
 ```
 
