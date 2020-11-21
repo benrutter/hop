@@ -49,12 +49,12 @@ def show_menu():
     global selected
     global files
     term_columns = shutil.get_terminal_size().columns
-    big = term_columns >170
-    col_size = 40
+    big = term_columns >100
+    #col_size = 30
     dynamic_size = max(10, shutil.get_terminal_size().lines - 20)
 
     if big:
-        margin = ' ' * int(term_columns/10)
+        margin = ' ' * int(term_columns/20)
     else:
         margin = ' '
     if big:
@@ -62,7 +62,7 @@ def show_menu():
     else:
         line = ''
 
-    col_size = max(37, int((term_columns/3)-len(margin)-3))
+    col_size = max(25, int((term_columns/3)-len(margin)-3))
 
     clear()
     for banner_segment in banner_segments:
@@ -239,7 +239,10 @@ def move_file(action='Move'):
                 if action == 'Move':
                     shutil.move(s['path'] + splitter + s['file'], str(os.getcwd()) + splitter)
                 elif action == 'Copy':
-                    shutil.copy(s['path'] + splitter + s['file'], str(os.getcwd()) + splitter)
+                    try:
+                        shutil.copy(s['path'] + splitter + s['file'], str(os.getcwd()) + splitter)
+                    except:
+                        shutil.copytree(s['path'] + splitter + s['file'], str(os.getcwd()) + splitter + s['file'])
             clear_selection()
             print(' Complete.')
         except Exception as E:
@@ -289,5 +292,9 @@ key_mapping = {
     35: toggle_show_help
 }
 
-show_menu()
-run_environment(key_mapping)
+def main():
+    show_menu()
+    run_environment(key_mapping)
+
+if __name__ == "__main__":
+    main()
