@@ -1,7 +1,7 @@
 # Hop!
 Hop is a python-written terminal based file explorer with support for windows/unix
 
-![readme_files/screenshot](https://github.com/houseofleft/pacer/blob/master/hop_scrot.png)
+![screenshot](https://github.com/houseofleft/hop/blob/master/readme_files/hop_scrot.png)
 
 ## Use
 Once Hop installed, it can be ran at any point in the terminal by typing 'hop' - this will bring you into the file explorer.
