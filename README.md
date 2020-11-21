@@ -1,7 +1,7 @@
 # HOP
 Hop is an installation free, python-written terminal based file explorer with support for windows/unix
 
-![screenshot](https://github.com/houseofleft/pacer/blob/master/hop_scrot.png)
+![readme_files/screenshot](https://github.com/houseofleft/pacer/blob/master/hop_scrot.png)
 
 ## Setting up
 The central requirement for running Hop is python 3 (if you're on a linux system, you'll also need to pip install getch)

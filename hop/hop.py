@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 ### module imports
 import os
 import sys
