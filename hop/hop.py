@@ -1,4 +1,4 @@
-### module imports
+# module imports
 import os
 import sys
 import shutil
@@ -28,7 +28,7 @@ banner_segment_3 = '┴ ┴└─┘┴  '
 banner_segments = [banner_segment_1, banner_segment_2, banner_segment_3]
 
 
-### function definitions
+# function definitions
 
 def run_environment(function_mapping):
     while True:
@@ -36,18 +36,20 @@ def run_environment(function_mapping):
         if key in function_mapping:
             function_mapping[key]()
 
+
 def clear():
     if os.name == 'nt':
         os.system('cls')
     else:
         os.system('clear')
 
+
 def show_menu():
 
     global selected
     global files
     term_columns = shutil.get_terminal_size().columns
-    big = term_columns >100
+    big = term_columns > 100
     #col_size = 30
     dynamic_size = max(10, shutil.get_terminal_size().lines - 20)
 
@@ -64,14 +66,15 @@ def show_menu():
 
     clear()
     for banner_segment in banner_segments:
-        print('{}{}'.format(margin,banner_segment))
+        print('{}{}'.format(margin, banner_segment))
     if show_help:
-        print('{}h, j, k & l to move\n{}console commands with a, hop commands with s\n{}select files with f and clear with d\n{}show hidden files with . and hide help with #\n{}quit with q'.format(margin,margin,margin,margin,margin,margin))
+        print('{}h, j, k & l to move\n{}console commands with a, hop commands with s\n{}select files with f and clear with d\n{}show hidden files with . and hide help with #\n{}quit with q'.format(
+            margin, margin, margin, margin, margin, margin))
     else:
         print('{}# for help'.format(margin))
     print(line)
 
-    ### directory_list
+    # directory_list
 
     files = os.listdir()
     if hidden:
@@ -79,18 +82,23 @@ def show_menu():
     files.sort()
 
     selected_files = [s['file'] for s in selection if s['path'] == os.getcwd()]
-    curr_f = [f + ' ' * int(col_size-len(f)) if len(f) < col_size else f[:col_size-3] + '...' for f in files]
+    curr_f = [f + ' ' * int(col_size-len(f)) if len(f) <
+              col_size else f[:col_size-3] + '...' for f in files]
     curr_f.sort()
 
-    prev_sel = [s['file'] for s in selection if s['path'] == os.path.abspath(os.path.join(os.getcwd(), os.pardir))]
+    prev_sel = [s['file'] for s in selection if s['path'] ==
+                os.path.abspath(os.path.join(os.getcwd(), os.pardir))]
     prev_f = os.listdir(os.pardir)
-    prev_f = [f + ' ' * int(col_size-len(f)) if len(f) < col_size else f[:col_size-3] + '...' for f in prev_f]
+    prev_f = [f + ' ' * int(col_size-len(f)) if len(f) <
+              col_size else f[:col_size-3] + '...' for f in prev_f]
     prev_f.sort()
 
     try:
-        next_sel = [s['file'] for s in selection if s['path'] == os.getcwd() + splitter + files[min(max(0,selected),len(files)-1)]]
-        next_f = os.listdir(files[min(max(0,selected),len(files)-1)])
-        next_f = [f + ' ' * int(col_size-len(f)) if len(f) < col_size else f[:col_size-3] + '...' for f in next_f]
+        next_sel = [s['file'] for s in selection if s['path'] == os.getcwd(
+        ) + splitter + files[min(max(0, selected), len(files)-1)]]
+        next_f = os.listdir(files[min(max(0, selected), len(files)-1)])
+        next_f = [f + ' ' * int(col_size-len(f)) if len(f) <
+                  col_size else f[:col_size-3] + '...' for f in next_f]
     except:
         next_f = []
     next_f.sort()
@@ -100,10 +108,10 @@ def show_menu():
         prev_f = [f for f in prev_f if f[0] != '.']
         next_f = [f for f in next_f if f[0] != '.']
 
-    selected = min(max(selected, 0),len(files)-1)
-    file_range_trans = curr_f[max(0,selected-(dynamic_size-1)):]
-    files_trans = files[max(0,selected-(dynamic_size-1)):]
-    file_range = range(0,dynamic_size)
+    selected = min(max(selected, 0), len(files)-1)
+    file_range_trans = curr_f[max(0, selected-(dynamic_size-1)):]
+    files_trans = files[max(0, selected-(dynamic_size-1)):]
+    file_range = range(0, dynamic_size)
 
     for i in file_range:
 
@@ -165,12 +173,14 @@ def show_menu():
     print('{}SELECTION: {}'.format(margin, [s['file'] for s in selection]))
     print(line)
 
+
 def move(num):
     global selected
     global message
     message = ''
     selected += num
     show_menu()
+
 
 def left():
     global selected
@@ -181,6 +191,7 @@ def left():
         pass
     show_menu()
 
+
 def right():
     global selected
     try:
@@ -190,17 +201,21 @@ def right():
         pass
     show_menu()
 
+
 def exec_int():
     show_menu()
     cmd = input(' Console Execute: ')
     os.system(cmd)
 
+
 def quit():
     clear()
     os._exit(0)
 
+
 def del_f():
-    cmd = input(' Delete ' + str([s['path'] + splitter + s['file'] for s in selection]) + '? (Y/N) ')
+    cmd = input(' Delete ' + str([s['path'] + splitter + s['file']
+                for s in selection]) + '? (Y/N) ')
     if cmd.lower().strip() == 'y':
         for s in selection:
             try:
@@ -215,32 +230,39 @@ def del_f():
         print(' Not deleted.')
     show_menu()
 
+
 def select():
     global selection
-    f_dict = {'path':os.getcwd(),'file':files[selected]}
+    f_dict = {'path': os.getcwd(), 'file': files[selected]}
     if f_dict in selection:
         selection.remove(f_dict)
     else:
         selection.append(f_dict)
     show_menu()
 
+
 def clear_selection():
     global selection
     selection = []
     show_menu()
 
+
 def move_file(action='Move'):
-    cmd = input(' {} {} into current directory? (Y/N)'.format(action, [s['path'] + splitter + s['file'] for s in selection]))
+    cmd = input(' {} {} into current directory? (Y/N)'.format(action,
+                [s['path'] + splitter + s['file'] for s in selection]))
     if cmd.lower().strip() == 'y':
         try:
             for s in selection:
                 if action == 'Move':
-                    shutil.move(s['path'] + splitter + s['file'], str(os.getcwd()) + splitter)
+                    shutil.move(s['path'] + splitter + s['file'],
+                                str(os.getcwd()) + splitter)
                 elif action == 'Copy':
                     try:
-                        shutil.copy(s['path'] + splitter + s['file'], str(os.getcwd()) + splitter)
+                        shutil.copy(s['path'] + splitter +
+                                    s['file'], str(os.getcwd()) + splitter)
                     except:
-                        shutil.copytree(s['path'] + splitter + s['file'], str(os.getcwd()) + splitter + s['file'])
+                        shutil.copytree(
+                            s['path'] + splitter + s['file'], str(os.getcwd()) + splitter + s['file'])
             clear_selection()
             print(' Complete.')
         except Exception as E:
@@ -263,10 +285,12 @@ def exec_pacer():
         print(' No action taken')
     show_menu()
 
+
 def toggle_hidden():
     global hidden
     hidden = not hidden
     show_menu()
+
 
 def toggle_show_help():
     global show_help
@@ -274,13 +298,17 @@ def toggle_show_help():
     show_menu()
 
 
-### key mappings and running environment
+# key mappings and running environment
 
 key_mapping = {
     106: lambda: move(1),
+    66: lambda: move(1),
     107: lambda: move(-1),
+    65: lambda: move(-1),
     108: right,
+    67: right,
     104: left,
+    68: left,
     97: exec_int,
     115: exec_pacer,
     102: select,
@@ -290,9 +318,11 @@ key_mapping = {
     35: toggle_show_help
 }
 
+
 def main():
     show_menu()
     run_environment(key_mapping)
+
 
 if __name__ == "__main__":
     main()
