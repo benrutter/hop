@@ -68,7 +68,7 @@ def show_menu():
     for banner_segment in banner_segments:
         print('{}{}'.format(margin, banner_segment))
     if show_help:
-        print('{}h, j, k & l to move\n{}console commands with a, hop commands with s\n{}select files with f and clear with d\n{}show hidden files with . and hide help with #\n{}quit with q'.format(
+        print('{}h, j, k & l, or arrow keys to move\n{}console commands with a, hop commands with s\n{}select files with f and clear with d\n{}show hidden files with . and hide help with #\n{}quit with q'.format(
             margin, margin, margin, margin, margin, margin))
     else:
         print('{}# for help'.format(margin))
