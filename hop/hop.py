@@ -327,6 +327,8 @@ key_mapping = {
     66: lambda: move(1),
     107: lambda: move(-1),
     65: lambda: move(-1),
+    53: lambda: move(-50),
+    54: lambda: move(50),
     108: right,
     67: right,
     104: left,
