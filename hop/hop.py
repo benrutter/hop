@@ -1,14 +1,36 @@
 # module imports
 import os
-import sys
 import shutil
 if os.name == 'nt':
     from msvcrt import getch
 else:
     from getch import getch
 
+# format with color
 
-### global variables
+
+def highlighted(string):
+    return f"\033[96m{string}\033[00m"
+
+
+def file_icon(file_string):
+    file_ending = file_string.split('.')[-1]
+    icons = ['∙', '∗', '∘']
+    if file_string == file_ending:
+        return '  '
+    else:
+        icon = icons[ord(file_ending[0]) % len(icons)]
+        return ' ' + icon
+
+# special highlighted input
+
+
+def hinput(string):
+    highlighted_string = highlighted(string)
+    return input(highlighted_string)
+
+# global variables
+
 
 show_help = False
 hidden = True
@@ -50,7 +72,7 @@ def show_menu():
     global files
     term_columns = shutil.get_terminal_size().columns
     big = term_columns > 100
-    #col_size = 30
+    col_size = 30
     dynamic_size = max(10, shutil.get_terminal_size().lines - 20)
 
     if big:
@@ -69,7 +91,7 @@ def show_menu():
         print('{}{}'.format(margin, banner_segment))
     if show_help:
         print('{}h, j, k & l, or arrow keys to move\n{}console commands with a, hop commands with s\n{}select files with f and clear with d\n{}show hidden files with . and hide help with #\n{}quit with q'.format(
-            margin, margin, margin, margin, margin, margin))
+            margin, margin, margin, margin, margin))
     else:
         print('{}# for help'.format(margin))
     print(line)
@@ -82,23 +104,23 @@ def show_menu():
     files.sort()
 
     selected_files = [s['file'] for s in selection if s['path'] == os.getcwd()]
-    curr_f = [f + ' ' * int(col_size-len(f)) if len(f) <
-              col_size else f[:col_size-3] + '...' for f in files]
+    curr_f = [f + file_icon(f) + ' ' * int(col_size-len(f)-3) if len(f) <
+              col_size else f[:col_size-6] + '...' for f in files]
     curr_f.sort()
 
     prev_sel = [s['file'] for s in selection if s['path'] ==
                 os.path.abspath(os.path.join(os.getcwd(), os.pardir))]
     prev_f = os.listdir(os.pardir)
-    prev_f = [f + ' ' * int(col_size-len(f)) if len(f) <
-              col_size else f[:col_size-3] + '...' for f in prev_f]
+    prev_f = [f + file_icon(f) + ' ' * int(col_size-len(f)-2) if len(f) <
+              col_size else f[:col_size-5] + '...' for f in prev_f]
     prev_f.sort()
 
     try:
         next_sel = [s['file'] for s in selection if s['path'] == os.getcwd(
         ) + splitter + files[min(max(0, selected), len(files)-1)]]
         next_f = os.listdir(files[min(max(0, selected), len(files)-1)])
-        next_f = [f + ' ' * int(col_size-len(f)) if len(f) <
-                  col_size else f[:col_size-3] + '...' for f in next_f]
+        next_f = [f + file_icon(f) + ' ' * int(col_size-len(f)-2) if len(f) <
+                  col_size else f[:col_size-5] + '...' for f in next_f]
     except:
         next_f = []
     next_f.sort()
@@ -127,7 +149,7 @@ def show_menu():
 
         # current directory
         if selected == i or (selected > dynamic_size-1 and i == dynamic_size-1):
-            cursor = ' >> '
+            cursor = highlighted(' >> ')
         else:
             cursor = '    '
 
@@ -204,7 +226,7 @@ def right():
 
 def exec_int():
     show_menu()
-    cmd = input(' Console Execute: ')
+    cmd = hinput(' Console Execute: ')
     os.system(cmd)
 
 
@@ -214,8 +236,8 @@ def quit():
 
 
 def del_f():
-    cmd = input(' Delete ' + str([s['path'] + splitter + s['file']
-                for s in selection]) + '? (Y/N) ')
+    cmd = hinput(' Delete ' + str([s['path'] + splitter + s['file']
+                                   for s in selection]) + '? (Y/N) ')
     if cmd.lower().strip() == 'y':
         for s in selection:
             try:
@@ -248,8 +270,8 @@ def clear_selection():
 
 
 def move_file(action='Move'):
-    cmd = input(' {} {} into current directory? (Y/N)'.format(action,
-                [s['path'] + splitter + s['file'] for s in selection]))
+    cmd = hinput(' {} {} into current directory? (Y/N)'.format(action,
+                                                               [s['path'] + splitter + s['file'] for s in selection]))
     if cmd.lower().strip() == 'y':
         try:
             for s in selection:
@@ -274,7 +296,7 @@ def move_file(action='Move'):
 
 def exec_pacer():
     show_menu()
-    cmd = input(' Command for current selections? (move, copy, delete): ')
+    cmd = hinput(' Command for current selections? (move, copy, delete): ')
     if cmd.lower().strip() == 'move':
         move_file('Move')
     elif cmd.lower().strip() == 'copy':
