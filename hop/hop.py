@@ -140,8 +140,8 @@ def show_menu():
         # previour directory
         if i >= 0 and i < len(prev_f):
             prev = prev_f[i]
-            if prev.strip() in prev_sel:
-                prev = '*' + prev
+            if prev.replace('∙',  ' ').replace('∗',  ' ').replace('∘', ' ').strip() in prev_sel:
+                prev = highlighted('▸') + prev
             else:
                 prev = ' ' + prev
         else:
@@ -154,7 +154,7 @@ def show_menu():
             cursor = '    '
 
         if i < len(files) and files_trans[i] in selected_files:
-            cursor = cursor + '*'
+            cursor = cursor + highlighted('▸')
         else:
             cursor = cursor + ' '
 
@@ -170,8 +170,8 @@ def show_menu():
         # next directory
         try:
             nxt = next_f[i]
-            if nxt.strip() in next_sel:
-                nxt = '*' + nxt
+            if nxt.replace('∙',  ' ').replace('∗',  ' ').replace('∘', ' ').strip() in next_sel:
+                nxt = highlighted('▸') + nxt
             else:
                 nxt = ' ' + nxt
         except:
