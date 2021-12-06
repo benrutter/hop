@@ -1,4 +1,3 @@
-# module imports
 import os
 import shutil
 if os.name == 'nt':
@@ -6,347 +5,315 @@ if os.name == 'nt':
 else:
     from getch import getch
 
-# format with color
 
-
-def highlighted(string):
-    return f"\033[96m{string}\033[00m"
-
-
-def file_icon(file_string):
-    file_ending = file_string.split('.')[-1]
-    icons = ['∙', '∗', '∘']
-    if file_string == file_ending:
-        return '  '
-    else:
-        icon = icons[ord(file_ending[0]) % len(icons)]
-        return ' ' + icon
-
-# special highlighted input
-
-
-def hinput(string):
-    highlighted_string = highlighted(string)
-    return input(highlighted_string)
-
-# global variables
-
-
-show_help = False
-hidden = True
-selected = 0
-selection = []
-files = os.listdir()
-message = ''
-move_file = ''
-if os.name == 'nt':
-    splitter = '\\'
-else:
-    splitter = '/'
-
-banner_segment_1 = '┬ ┬┌─┐┌─┐'
-banner_segment_2 = '├─┤│ │├─┘'
-banner_segment_3 = '┴ ┴└─┘┴  '
-banner_segments = [banner_segment_1, banner_segment_2, banner_segment_3]
-
-
-# function definitions
-
-def run_environment(function_mapping):
-    while True:
-        key = ord(getch())
-        if key in function_mapping:
-            function_mapping[key]()
-
-
-def clear():
-    if os.name == 'nt':
-        os.system('cls')
-    else:
-        os.system('clear')
-
-
-def show_menu():
-
-    global selected
-    global files
-    term_columns = shutil.get_terminal_size().columns
-    big = term_columns > 100
-    col_size = 30
-    dynamic_size = max(10, shutil.get_terminal_size().lines - 20)
-
-    if big:
-        margin = ' ' * int(term_columns/20)
-    else:
-        margin = ' '
-    if big:
-        line = '-' * term_columns
-    else:
-        line = ''
-
-    col_size = max(25, int((term_columns/3)-len(margin)-3))
-
-    clear()
-    for banner_segment in banner_segments:
-        print('{}{}'.format(margin, banner_segment))
-    if show_help:
-        print('{}h, j, k & l, or arrow keys to move\n{}console commands with a, hop commands with s\n{}select files with f and clear with d\n{}show hidden files with . and hide help with #\n{}quit with q'.format(
-            margin, margin, margin, margin, margin))
-    else:
-        print('{}# for help'.format(margin))
-    print(line)
-
-    # directory_list
-
-    files = os.listdir()
-    if hidden:
-        files = [f for f in files if f[0] != '.']
-    files.sort()
-
-    selected_files = [s['file'] for s in selection if s['path'] == os.getcwd()]
-    curr_f = [f + file_icon(f) + ' ' * int(col_size-len(f)-3) if len(f) <
-              col_size else f[:col_size-6] + '...' for f in files]
-    curr_f.sort()
-
-    prev_sel = [s['file'] for s in selection if s['path'] ==
-                os.path.abspath(os.path.join(os.getcwd(), os.pardir))]
-    prev_f = os.listdir(os.pardir)
-    prev_f = [f + file_icon(f) + ' ' * int(col_size-len(f)-2) if len(f) <
-              col_size else f[:col_size-5] + '...' for f in prev_f]
-    prev_f.sort()
-
-    try:
-        next_sel = [s['file'] for s in selection if s['path'] == os.getcwd(
-        ) + splitter + files[min(max(0, selected), len(files)-1)]]
-        next_f = os.listdir(files[min(max(0, selected), len(files)-1)])
-        next_f = [f + file_icon(f) + ' ' * int(col_size-len(f)-2) if len(f) <
-                  col_size else f[:col_size-5] + '...' for f in next_f]
-    except:
-        next_f = []
-    next_f.sort()
-
-    if hidden:
-        curr_f = [f for f in curr_f if f[0] != '.']
-        prev_f = [f for f in prev_f if f[0] != '.']
-        next_f = [f for f in next_f if f[0] != '.']
-
-    selected = min(max(selected, 0), len(files)-1)
-    file_range_trans = curr_f[max(0, selected-(dynamic_size-1)):]
-    files_trans = files[max(0, selected-(dynamic_size-1)):]
-    file_range = range(0, dynamic_size)
-
-    for i in file_range:
-
-        # previour directory
-        if i >= 0 and i < len(prev_f):
-            prev = prev_f[i]
-            if prev.replace('∙',  ' ').replace('∗',  ' ').replace('∘', ' ').strip() in prev_sel:
-                prev = highlighted('▸') + prev
-            else:
-                prev = ' ' + prev
+class HopEnvironment():
+    def __init__(self):
+        self.show_help = False
+        self.hidden = True
+        self.selected = 0
+        self.selection = []
+        self.file_icons = ['∙', '∗', '∘']
+        self.message = ''
+        if os.name == 'nt':
+            self.splitter = '\\'
         else:
-            prev = ' ' * (col_size+1)
+            self.splitter = '/'
+        self.banner_segments = [
+            '┬ ┬┌─┐┌─┐',
+            '├─┤│ │├─┘',
+            '┴ ┴└─┘┴  ',
+        ]
+        self.set_dynamic_variables()
 
-        # current directory
-        if selected == i or (selected > dynamic_size-1 and i == dynamic_size-1):
-            cursor = highlighted(' >> ')
-        else:
-            cursor = '    '
+    def set_dynamic_variables(self):
+        self.files = os.listdir()
+        self.files.sort()
+        if self.hidden:
+            self.files = [i for i in self.files if i[0] != '.']
+        terminal_columns, terminal_lines = shutil.get_terminal_size()
+        self.dynamic_height = max(10, terminal_lines - 20)
+        self.wide_mode = terminal_columns > 100
 
-        if i < len(files) and files_trans[i] in selected_files:
-            cursor = cursor + highlighted('▸')
+        if self.wide_mode:
+            self.margin = ' ' * int(terminal_columns/20)
+            self.line = '-' * terminal_columns
         else:
-            cursor = cursor + ' '
+            self.margin = ' '
+            self.line = ''
+
+        self.column_size = max(30, int((terminal_columns-len(self.margin)) / 3)) - 15
+
+    def italicize(self, string):
+        return f"\033[3m{string}\033[00m"
+
+    def file_icon(self, file_string):
+        file_ending = file_string.split('.')[-1]
+        if file_string == file_ending:
+            return '  '
+        else:
+            icon = self.file_icons[ord(file_ending[0]) % len(self.file_icons)]
+            return ' ' + icon
+
+    def quit(self):
+        self.clear()
+        os._exit(0)
+
+    def clear(self):
+        if os.name == 'nt':
+            os.system('cls')
+        else:
+            os.system('clear')
+
+    def toggle_hidden(self):
+        self.hidden = not self.hidden
+
+    def toggle_show_help(self):
+        self.show_help = not self.show_help
+
+    def filename_for_display(self, filename):
+        if len(filename) < self.column_size:
+            buffer = ' ' * int(self.column_size-len(filename))
+            return filename + self.file_icon(filename) + buffer
+        else:
+            return filename[:self.column_size-1] + '...'
+
+    def display_banner(self):
+        for banner_segment in self.banner_segments:
+            print(f'{self.margin}{banner_segment}')
+        if self.show_help:
+            print(
+                f'{self.margin}h, j, k & l, or arrow keys to move'
+                f'\n{self.margin}console commands with a, hop commands with si'
+                f'\n{self.margin}select files with f and clear with di'
+                f'\n{self.margin}show hidden files with . and hide help with #'
+                f'\n{self.margin}quit with q'
+            )
+        else:
+            print(f'{self.margin}# for help')
+        print(self.line)
+
+    def read_directories(self):
+        cwd_files = os.listdir()
+        if self.hidden:
+            cwd_files = [i for i in cwd_files if i[0] != '.']
+        cwd_files.sort()
+
+        self.cwd_selection = [
+            i['file'] for i in self.selection if i['path'] == os.getcwd()
+        ]
+
+        self.cwd_files = [self.filename_for_display(i) for i in cwd_files]
+
+        self.pwd_selection = [
+            i['file'] for i in self.selection
+            if i['path'] == os.path.abspath(
+                os.path.join(os.getcwd(), os.pardir)
+            )
+        ]
+
+        self.pwd_files = [self.filename_for_display(
+            i) for i in os.listdir(os.pardir)]
+        self.pwd_files.sort()
 
         try:
-            if i >= 0:
-                curr = cursor + curr_f[i]
-                curr = cursor + file_range_trans[i]
+            self.nwd_selection = [
+                i['file'] for i in self.selection
+                if i['path'] == os.getcwd() + self.splitter +
+                cwd_files[min(max(0, self.selected), len(cwd_files)-1)]
+            ]
+            self.nwd_files = [
+                self.filename_for_display(i) for i in os.listdir(
+                    cwd_files[min(max(0, self.selected), len(cwd_files)-1)])
+            ]
+            self.nwd_files.sort()
+        except (NotADirectoryError, PermissionError, IndexError):
+            self.nwd_files = []
+
+        # removing hidden files
+        if self.hidden:
+            self.pwd_files = [i for i in self.pwd_files if i[0] != '.']
+            self.nwd_files = [i for i in self.nwd_files if i[0] != '.']
+
+    def in_selection(self, filename, selection):
+        for icon in self.file_icons:
+            filename = filename.replace(icon, ' ')
+        filename = filename.strip()
+        return filename in selection
+
+    def display_directories(self):
+        self.selected = min(max(self.selected, 0), len(self.cwd_files)-1)
+        for i in range(0, self.dynamic_height):
+
+            # previous directory
+            if i < len(self.pwd_files):
+                pwd_line = self.pwd_files[i]
+                if self.in_selection(pwd_line, self.pwd_selection):
+                    pwd_line = self.italicize(pwd_line)
             else:
-                curr = cursor + (' ' * col_size)
-        except:
-            curr = cursor + (' ' * col_size)
+                pwd_line = ' ' * self.column_size + '  '
 
-        # next directory
-        try:
-            nxt = next_f[i]
-            if nxt.replace('∙',  ' ').replace('∗',  ' ').replace('∘', ' ').strip() in next_sel:
-                nxt = highlighted('▸') + nxt
+            # cursor
+            if self.selected == i or (
+                    self.selected > self.dynamic_height-1 and
+                    i == self.dynamic_height-1
+            ):
+                cursor = ' >> '
             else:
-                nxt = ' ' + nxt
-        except:
-            nxt = (' ' * (col_size+1))
+                cursor = '    '
 
-        if big:
-            print(margin + prev + margin + curr + margin + nxt)
+            # current directory
+            if i < len(self.cwd_files):
+                cwd_line = self.cwd_files[i]
+                if self.in_selection(cwd_line, self.cwd_selection):
+                    cwd_line = self.italicize(cwd_line)
+            else:
+                cwd_line = ' ' * self.column_size + '  '
+
+            # next directory
+            if i < len(self.nwd_files):
+                nwd_line = self.nwd_files[i]
+                if self.in_selection(nwd_line, self.nwd_selection):
+                    nwd_line = self.italicize(nwd_line)
+            else:
+                nwd_line = ' ' * self.column_size + '  '
+
+            if self.wide_mode:
+                print(self.margin + pwd_line + self.margin +
+                      cursor + cwd_line + self.margin + nwd_line)
+            else:
+                print(cursor + cwd_line)
+
+    def display_cmd(self):
+        print(self.line)
+        if self.selected >= 0:
+            print(f'{self.margin}FILE: {self.files[self.selected]}')
         else:
-            print(curr)
+            print(f'{self.margin}FILE: <NA>')
+        print(f'{self.margin}SELECTION: {[i["file"] for i in self.selection]}')
 
-    print('\n{}'.format(line))
-    print('{}DIR: {}'.format(margin, os.getcwd()))
-    try:
-        if selected >= 0:
-            print('{}FILE: {}'.format(margin, files[selected]))
-        else:
-            print('{}FILE: <NA>'.format(margin))
-    except:
-        print('{}FILE: <NA>'.format(margin))
+    def move(self, num):
+        self.message = ''
+        self.selected += num
 
-    print('{}SELECTION: {}'.format(margin, [s['file'] for s in selection]))
-    print(line)
-
-
-def move(num):
-    global selected
-    global message
-    message = ''
-    selected += num
-    show_menu()
-
-
-def left():
-    global selected
-    try:
+    def up_dir(self):
         os.chdir('..')
-        selected = 0
-    except:
-        pass
-    show_menu()
+        self.selected = 0
 
-
-def right():
-    global selected
-    try:
-        os.chdir(files[selected])
-        selected = 0
-    except:
-        pass
-    show_menu()
-
-
-def exec_int():
-    show_menu()
-    cmd = hinput(' Console Execute: ')
-    os.system(cmd)
-
-
-def quit():
-    clear()
-    os._exit(0)
-
-
-def del_f():
-    cmd = hinput(' Delete ' + str([s['path'] + splitter + s['file']
-                                   for s in selection]) + '? (Y/N) ')
-    if cmd.lower().strip() == 'y':
-        for s in selection:
-            try:
-                os.remove(s['path'] + splitter + s['file'])
-            except:
-                try:
-                    shutil.rmtree(s['path'] + splitter + s['file'])
-                except Exception as e:
-                    print(' Deletion error ({})'.format(str(e)))
-        clear_selection()
-    else:
-        print(' Not deleted.')
-    show_menu()
-
-
-def select():
-    global selection
-    f_dict = {'path': os.getcwd(), 'file': files[selected]}
-    if f_dict in selection:
-        selection.remove(f_dict)
-    else:
-        selection.append(f_dict)
-    show_menu()
-
-
-def clear_selection():
-    global selection
-    selection = []
-    show_menu()
-
-
-def move_file(action='Move'):
-    cmd = hinput(' {} {} into current directory? (Y/N)'.format(action,
-                                                               [s['path'] + splitter + s['file'] for s in selection]))
-    if cmd.lower().strip() == 'y':
+    def down_dir(self):
         try:
-            for s in selection:
-                if action == 'Move':
-                    shutil.move(s['path'] + splitter + s['file'],
-                                str(os.getcwd()) + splitter)
-                elif action == 'Copy':
+            os.chdir(self.files[self.selected])
+            self.selected = 0
+        except (NotADirectoryError, PermissionError, IndexError):
+            pass
+
+    def select(self):
+        file_dict = {'path': os.getcwd(), 'file':self.files[self.selected]}
+        if file_dict in self.selection:
+            self.selection.remove(file_dict)
+        else:
+            self.selection.append(file_dict)
+
+    def clear_selection(self):
+        self.selection = []
+
+    def shell_execute(self):
+        cmd = input(f'{self.margin}Console Execute: ')
+        os.system(cmd)
+        print(f"\n\n{self.margin}Press any key to continue.")
+        wait = getch()
+
+    def delete_file(self):
+        cmd = input(f"{self.margin}Delete all files in selection? (Y/N)")
+        if cmd.lower().strip() == 'y':
+            for i in self.selection:
+                try:
+                    os.remove(i['path'] + self.splitter + i['file'])
+                    self.selection.remove(i)
+                except:
                     try:
-                        shutil.copy(s['path'] + splitter +
-                                    s['file'], str(os.getcwd()) + splitter)
-                    except:
-                        shutil.copytree(
-                            s['path'] + splitter + s['file'], str(os.getcwd()) + splitter + s['file'])
-            clear_selection()
-            print(' Complete.')
-        except Exception as E:
-            print(' Error: ' + str(E))
-    else:
-        print(' Not complete.')
-    show_menu()
+                        shutil.rmtree(i['path'] + self.splitter + i['file'])
+                        self.selection.remove(i)
+                    except Exception as e:
+                        print(f"{self.margin}Deletion error: {e}\nPress any key to continue.")
+                        wait = getch()
+
+    def move_file(self):
+        cmd = input(f"{self.margin}Move files into directory? (Y/N)")
+        if cmd.lower().strip() == 'y':
+            try:
+                for i in self.selection:
+                    shutil.move(i['path'] + self.splitter + i['file'], str(os.getcwd()) + self.splitter)
+                self.clear_selection()
+            except Exception as e:
+                print(f"{self.margin}Unexpected error: {e}\nPress any key to continue.")
+                wait = getch()
+            
+    def copy_file(self):
+        cmd = input(f"{self.margin}Copy files into directory? (Y/N)")
+        if cmd.lower().strip() == 'y':
+            try:
+                 for i in self.selection:
+                     try:
+                         shutil.copy(i['path'] + self.splitter + i['file'], str(os.getcwd()) + self.splitter)
+                     except:
+                         shutil.copytree(
+                         i['path'] + self.splitter + i['file'], str(os.getcwd()) + self.splitter + i['file'])
+                 self.clear_selection()
+            except Exception as e:
+                print(f"{self.margin}Unexpected error: {e}\n{self.margin}Press any key to continue.")
+                wait = getch()
+
+    def pacer_execute(self):
+        cmd = input(f'{self.margin}Command for current selections? (move, copy, delete): ').lower().strip()
+        if cmd == 'move':
+            self.move_file()
+        elif cmd == 'copy':
+            self.copy_file()
+        elif cmd == 'delete':
+            self.delete_file()
+        else:
+            print('No action taken')
+
+    def callback(self):
+        self.set_dynamic_variables()
+        self.read_directories()
+        self.clear()
+        self.display_banner()
+        self.display_directories()
+        self.display_cmd()
+
+    def run(self):
+        function_mapping = {
+            106: lambda: self.move(1),
+            66: lambda: self.move(1),
+            107: lambda: self.move(-1),
+            65: lambda: self.move(-1),
+            53: lambda: self.move(-50),
+            54: lambda: self.move(50),
+            108: self.down_dir,
+            67: self.down_dir,
+            104: self.up_dir,
+            68: self.up_dir,
+            46: self.toggle_hidden,
+            35: self.toggle_show_help,
+            113: self.quit,
+            97: self.shell_execute,
+            102: self.select,
+            100: self.clear_selection,
+            115: self.pacer_execute,
+        }
+
+        self.callback()
+
+        while True:
+            try:
+                key = ord(getch())
+            except OverflowError:
+                key = ''
+            if key in function_mapping:
+                function_mapping[key]()
+                self.callback()
 
 
-def exec_pacer():
-    show_menu()
-    cmd = hinput(' Command for current selections? (move, copy, delete): ')
-    if cmd.lower().strip() == 'move':
-        move_file('Move')
-    elif cmd.lower().strip() == 'copy':
-        move_file('Copy')
-    elif cmd.lower().strip() == 'delete':
-        del_f()
-    else:
-        print(' No action taken')
-    show_menu()
-
-
-def toggle_hidden():
-    global hidden
-    hidden = not hidden
-    show_menu()
-
-
-def toggle_show_help():
-    global show_help
-    show_help = not show_help
-    show_menu()
-
-
-# key mappings and running environment
-
-key_mapping = {
-    106: lambda: move(1),
-    66: lambda: move(1),
-    107: lambda: move(-1),
-    65: lambda: move(-1),
-    53: lambda: move(-50),
-    54: lambda: move(50),
-    108: right,
-    67: right,
-    104: left,
-    68: left,
-    97: exec_int,
-    115: exec_pacer,
-    102: select,
-    100: clear_selection,
-    113: quit,
-    46: toggle_hidden,
-    35: toggle_show_help
-}
-
-
-def main():
-    show_menu()
-    run_environment(key_mapping)
-
-
-if __name__ == "__main__":
-    main()
+test = HopEnvironment()
+test.run()
