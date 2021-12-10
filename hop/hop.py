@@ -37,14 +37,14 @@ class HopEnvironment():
         if self.wide_mode:
             self.margin = ' ' * int(terminal_columns/20)
             self.line = '-' * terminal_columns
+            self.column_size = int((terminal_columns - (len(self.margin)*3))/3)-5
         else:
             self.margin = ' '
             self.line = ''
+            self.column_size = 30
 
-        self.column_size = max(30, int((terminal_columns-len(self.margin)) / 3)) - 15
-
-    def italicize(self, string):
-        return f"\033[3m{string}\033[00m"
+    def highlight(self, string):
+        return f"\033[7m{string}\033[00m"
 
     def file_icon(self, file_string):
         file_ending = file_string.split('.')[-1]
@@ -145,10 +145,11 @@ class HopEnvironment():
         for i in range(0, self.dynamic_height):
 
             # previous directory
-            if i < len(self.pwd_files):
+            # let's not display anything if we're at the absolute parent
+            if (i < len(self.pwd_files)) and (self.pwd_files != self.cwd_files):
                 pwd_line = self.pwd_files[i]
                 if self.in_selection(pwd_line, self.pwd_selection):
-                    pwd_line = self.italicize(pwd_line)
+                    pwd_line = self.highlight(pwd_line)
             else:
                 pwd_line = ' ' * self.column_size + '  '
 
@@ -162,10 +163,13 @@ class HopEnvironment():
                 cursor = '    '
 
             # current directory
-            if i < len(self.cwd_files):
-                cwd_line = self.cwd_files[i]
+            # we need slightly different logic to move around in this one
+            overshoot = max(0, self.selected - self.dynamic_height + 1)
+            i_adjusted = overshoot + i
+            if i_adjusted < len(self.cwd_files):
+                cwd_line = self.cwd_files[i_adjusted]
                 if self.in_selection(cwd_line, self.cwd_selection):
-                    cwd_line = self.italicize(cwd_line)
+                    cwd_line = self.highlight(cwd_line)
             else:
                 cwd_line = ' ' * self.column_size + '  '
 
@@ -173,7 +177,7 @@ class HopEnvironment():
             if i < len(self.nwd_files):
                 nwd_line = self.nwd_files[i]
                 if self.in_selection(nwd_line, self.nwd_selection):
-                    nwd_line = self.italicize(nwd_line)
+                    nwd_line = self.highlight(nwd_line)
             else:
                 nwd_line = ' ' * self.column_size + '  '
 
@@ -207,7 +211,7 @@ class HopEnvironment():
             pass
 
     def select(self):
-        file_dict = {'path': os.getcwd(), 'file':self.files[self.selected]}
+        file_dict = {'path': os.getcwd(), 'file': self.files[self.selected]}
         if file_dict in self.selection:
             self.selection.remove(file_dict)
         else:
@@ -220,51 +224,68 @@ class HopEnvironment():
         cmd = input(f'{self.margin}Console Execute: ')
         os.system(cmd)
         print(f"\n\n{self.margin}Press any key to continue.")
-        wait = getch()
+        _ = getch()
 
     def delete_file(self):
-        cmd = input(f"{self.margin}Delete all files in selection? (Y/N)")
-        if cmd.lower().strip() == 'y':
-            for i in self.selection:
-                try:
-                    os.remove(i['path'] + self.splitter + i['file'])
-                    self.selection.remove(i)
-                except:
-                    try:
-                        shutil.rmtree(i['path'] + self.splitter + i['file'])
-                        self.selection.remove(i)
-                    except Exception as e:
-                        print(f"{self.margin}Deletion error: {e}\nPress any key to continue.")
-                        wait = getch()
+        cmd = input(f"{self.margin}Delete all files in selection? (Y/N) ")
+        replace_selection = self.selection.copy()
+        if cmd.lower().strip() != 'y':
+            return False
+        for i in self.selection:
+            try:
+                os.remove(i['path'] + self.splitter + i['file'])
+                replace_selection.remove(i)
+            except IsADirectoryError:
+                shutil.rmtree(i['path'] + self.splitter + i['file'])
+                replace_selection.remove(i)
+            except PermissionError:
+                print(
+                    f"{self.margin}Permission Error.\n{self.margin}Press any key to continue")
+                _ = getch()
+                return False
+        self.selection = replace_selection
 
     def move_file(self):
-        cmd = input(f"{self.margin}Move files into directory? (Y/N)")
-        if cmd.lower().strip() == 'y':
-            try:
-                for i in self.selection:
-                    shutil.move(i['path'] + self.splitter + i['file'], str(os.getcwd()) + self.splitter)
-                self.clear_selection()
-            except Exception as e:
-                print(f"{self.margin}Unexpected error: {e}\nPress any key to continue.")
-                wait = getch()
-            
+        cmd = input(f"{self.margin}Move files into directory? (Y/N) ")
+        replace_selection = self.selection.copy()
+        if cmd.lower().strip() != 'y':
+            return False
+        try:
+            for i in self.selection:
+                shutil.move(i['path'] + self.splitter +
+                            i['file'], str(os.getcwd()) + self.splitter)
+                replace_selection.remove(i)
+        except Exception as e:
+            print(
+                f"{self.margin}Unexpected error: {e}\n{self.margin}Press any key to continue.")
+            _ = getch()
+        self.selection = replace_selection
+
     def copy_file(self):
-        cmd = input(f"{self.margin}Copy files into directory? (Y/N)")
-        if cmd.lower().strip() == 'y':
-            try:
-                 for i in self.selection:
-                     try:
-                         shutil.copy(i['path'] + self.splitter + i['file'], str(os.getcwd()) + self.splitter)
-                     except:
-                         shutil.copytree(
-                         i['path'] + self.splitter + i['file'], str(os.getcwd()) + self.splitter + i['file'])
-                 self.clear_selection()
-            except Exception as e:
-                print(f"{self.margin}Unexpected error: {e}\n{self.margin}Press any key to continue.")
-                wait = getch()
+        cmd = input(f"{self.margin}Copy files into directory? (Y/N) ")
+        replace_selection = self.selection.copy()
+        if cmd.lower().strip() != 'y':
+            return False
+        try:
+            for i in self.selection:
+                try:
+                    shutil.copy(i['path'] + self.splitter +
+                                i['file'], str(os.getcwd()) + self.splitter)
+                    replace_selection.remove(i)
+                except IsADirectoryError:
+                    shutil.copytree(
+                        i['path'] + self.splitter + i['file'],
+                        str(os.getcwd()) + self.splitter + i['file'])
+                    replace_selection.remove(i)
+        except Exception as e:
+            print(
+                f"{self.margin}Unexpected error: {e}\n{self.margin}Press any key to continue.")
+            _ = getch()
+        self.selection = replace_selection
 
     def pacer_execute(self):
-        cmd = input(f'{self.margin}Command for current selections? (move, copy, delete): ').lower().strip()
+        cmd = input(
+            f'{self.margin}Command for current selections? (move, copy, delete): ').lower().strip()
         if cmd == 'move':
             self.move_file()
         elif cmd == 'copy':
@@ -315,5 +336,10 @@ class HopEnvironment():
                 self.callback()
 
 
-test = HopEnvironment()
-test.run()
+def run_session():
+    session = HopEnvironment()
+    session.run()
+
+
+if __name__ == "__main__":
+    run_session()
