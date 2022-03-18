@@ -1,4 +1,9 @@
+"""
+Dmmy module doctring as an example
+
+"""
 print('hello world!')
+
 
 def some_function():
     """
