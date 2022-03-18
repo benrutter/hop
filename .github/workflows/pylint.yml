@@ -16,6 +16,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pylint
+    - name: Getting all relevant branches
+      run: |
+        git fetch
     - name: Analyse differences with pylint
       run: |
-        pylint $(git diff --name-only master)
+        pylint $(git diff --name-only --diff-filter=ACMRTUXB master | grep -E "(.js$|.ts$|.tsx$)")
