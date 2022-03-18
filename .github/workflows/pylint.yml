@@ -21,4 +21,4 @@ jobs:
         git fetch
     - name: Analyse differences with pylint
       run: |
-        pylint $(git diff --name-only --diff-filter=ACMRTUXB origin/master origin/cool | grep -E "(.py)")
+        pylint $(git diff --name-only --diff-filter=ACMRTUXB origin/master | grep -E "(.py)")
