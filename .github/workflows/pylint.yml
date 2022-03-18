@@ -22,4 +22,4 @@ jobs:
       id: extract_branch
     - name: Analyse differences with pylint
       run: |
-        pylint $(git diff --name-only --diff-filter=ACMRTUXB master $(extract_branch) | grep -E "(.js$|.ts$|.tsx$)")
+        pylint $(git diff --name-only --diff-filter=ACMRTUXB master $(steps.extract_branch.outputs.branch) | grep -E "(.js$|.ts$|.tsx$)")
