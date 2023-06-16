@@ -199,7 +199,9 @@ class HopApp:
             self.process_keys()
             self.clear()
 
-
-if __name__ == "__main__":
+def run_app():
     app = HopApp()
     app.run()
+
+if __name__ == "__main__":
+    run_app()
