@@ -1,10 +1,10 @@
 from typing import List
 import os
 from pathlib import Path
-import shutil
 
-from send2trash import send2trash
 from rich import print
+
+import hop_functions as hf
 
 if os.name == "nt":
     from msvcrt import getch
@@ -12,9 +12,7 @@ else:
     from getch import getch
 
 
-
 class HopApp:
-
     def __init__(self):
         self.input_str: str = ""
         self.message: str = ""
@@ -29,15 +27,12 @@ class HopApp:
         print(f"{os.getcwd()}\n")
         trimmed_input_str: str = self.input_str
         if len(trimmed_input_str) > self.input_length:
-            trimmed_input_str = trimmed_input_str[len(trimmed_input_str) - self.input_length:]
+            trimmed_input_str = trimmed_input_str[
+                len(trimmed_input_str) - self.input_length :
+            ]
         elif len(trimmed_input_str) < self.input_length:
-            trimmed_input_str += ' '*(self.input_length-len(trimmed_input_str))
+            trimmed_input_str += " " * (self.input_length - len(trimmed_input_str))
         print(f"[bold reverse]>> {trimmed_input_str}[/bold reverse]\n")
-
-    def levenshtein_distance(self, a, b) -> int:
-        char_diff = len(set(a) - set(b))
-        len_diff = abs(len(b) - len(a))
-        return len_diff + char_diff
 
     def update_files(self) -> None:
         self.files = [Path("..")] + [i.resolve() for i in Path(".").iterdir()]
@@ -47,25 +42,20 @@ class HopApp:
         if search_str.endswith("+"):
             search_str = search_str[:-1]
         files = [i for i in self.files if search_str in str(i).lower()]
-        files.sort(key=lambda x: self.levenshtein_distance(search_str, str(x)))
+        files.sort(key=lambda x: hf.levenshtein_distance(search_str, str(x)))
         self.files = files
 
-
-    def get_icon(self, path: Path) -> str:
-        if path.is_dir():
-            return ":file_folder:"
-        if path.suffix != "":
-            file_icons = [":koala:", ":honeybee:", ":kiwi_fruit:", ":herb:", ":wave:"]
-            return file_icons[ord(path.suffix[-1]) % len(file_icons)]
-        return ":alien_monster:"
-
     def display_files(self) -> None:
-        cut_files = self.files[:min(self.list_length, len(self.files))]
-        blanks: List[str] = ['' for i in range(self.list_length - len(self.files))]
-        files_to_display: List[str] = [str(i.stem) + str(i.suffix) for i in cut_files] + blanks
-        icons: List[str] = [self.get_icon(i) for i in cut_files] + blanks
+        cut_files = self.files[: min(self.list_length, len(self.files))]
+        blanks: List[str] = ["" for i in range(self.list_length - len(self.files))]
+        files_to_display: List[str] = [
+            str(i.stem) + str(i.suffix) for i in cut_files
+        ] + blanks
+        icons: List[str] = [hf.get_icon(i) for i in cut_files] + blanks
         selected: List[bool] = [i in self.inventory for i in cut_files] + blanks
-        for i, (file, icon, is_selected) in enumerate(zip(files_to_display, icons, selected)):
+        for i, (file, icon, is_selected) in enumerate(
+            zip(files_to_display, icons, selected)
+        ):
             if file == "..":
                 file = ".. (parent dir)"
             if i == 0:
@@ -76,7 +66,9 @@ class HopApp:
 
     def display_footer(self) -> None:
         print(f"[u]{' ' * self.max_file_width}[/u]")
-        formatted_inventory: str = ', '.join([str(i.stem) for i in self.inventory]) or "empty"
+        formatted_inventory: str = (
+            ", ".join([str(i.stem) for i in self.inventory]) or "empty"
+        )
         print(f"\nInventory: {formatted_inventory}")
         print(self.message)
 
@@ -88,48 +80,19 @@ class HopApp:
         self.inventory = []
 
     def delete_files_in_inventory(self) -> None:
-        not_deleted: List[str] = []
-        for i in self.inventory:
-            try:
-                send2trash(i.resolve())
-            except:
-                not_deleted.append(str(i))
+        hf.delete_files(self.inventory)
         self.inventory = []
-        if len(not_deleted) > 0:
-            self.message = "[red bold]Could not delete:\n" + "\n".join(not_deleted) + "[/red bold]"
-        else:
-            self.message = "[green]Files in inventory deleted[/green]"
         self.input_str = ""
 
     def move_files_in_inventory(self) -> None:
-        not_moved: List[str] = []
-        for i in self.inventory:
-            try:
-                shutil.move(i.resolve(), i.stem)
-            except:
-                not_moved.append(str(i))
+        hf.move_files(self.inventory)
         self.inventory = []
-        if len(not_moved) > 0:
-            self.message = "[red bold]Could not move:\n" + "\n".join(not_moved) + "[/red bold]"
-        else:
-            self.message = "[green]Files in inventory moved[/green]"
         self.input_str = ""
-
 
     def copy_files_in_inventory(self) -> None:
-        not_copied: List[str] = []
-        for i in self.inventory:
-            try:
-                shutil.copy(str(i.resolve()), i.stem)
-            except:
-                not_copied.append(str(i))
+        hf.copy_files(self.inventory)
         self.inventory = []
-        if len(not_copied) > 0:
-            self.message = "[red bold]Could not copy:\n" + "\n".join(not_copied) +"[/red bold]"
-        else:
-            self.message = "[green]Files in inventory copied[/green]"
         self.input_str = ""
-
 
     def exit(self) -> None:
         self.running = False
@@ -161,7 +124,7 @@ class HopApp:
             os.chdir(self.files[0])
             self.input_str = ""
         except:
-            self.message = "[red]Can\'t navigate into item[/red]"
+            self.message = "[red]Can't navigate into item[/red]"
 
     def backspace(self) -> None:
         if len(self.input_str) != 0:
@@ -170,9 +133,9 @@ class HopApp:
     def process_keys(self) -> None:
         key = getch()
         key_code = ord(key)
-        if key_code == 10 and self.input_str.startswith('!'):
+        if key_code == 10 and self.input_str.startswith("!"):
             self.run_command()
-        elif key_code == 10 and self.input_str.endswith('+'):
+        elif key_code == 10 and self.input_str.endswith("+"):
             self.add_to_inventory()
         elif key_code == 10:
             self.chdir()
@@ -184,10 +147,10 @@ class HopApp:
             self.message = ""
 
     def clear(self):
-        if os.name == 'nt':
-            os.system('cls')
+        if os.name == "nt":
+            os.system("cls")
         else:
-            os.system('clear')    
+            os.system("clear")
 
     def run(self) -> None:
         self.clear()
@@ -199,9 +162,11 @@ class HopApp:
             self.process_keys()
             self.clear()
 
+
 def run_app():
     app = HopApp()
     app.run()
+
 
 if __name__ == "__main__":
     run_app()
