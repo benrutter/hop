@@ -1,4 +1,4 @@
-from app import HopApp
+from hop.app import HopApp
 
 
 def run():

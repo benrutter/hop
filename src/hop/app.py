@@ -4,7 +4,7 @@ from pathlib import Path
 
 from rich import print
 
-import hop_functions as hf
+from hop import hop_functions as hf
 
 if os.name == "nt":
     from msvcrt import getch
@@ -161,12 +161,3 @@ class HopApp:
             self.display_footer()
             self.process_keys()
             self.clear()
-
-
-def run_app():
-    app = HopApp()
-    app.run()
-
-
-if __name__ == "__main__":
-    run_app()

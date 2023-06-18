@@ -4,6 +4,8 @@ import shutil
 
 from send2trash import send2trash
 
+from hop import icons
+
 
 def copy_files(files: List[Path]) -> str:
     """
@@ -68,7 +70,4 @@ def get_icon(path: Path) -> str:
     """
     if path.is_dir():
         return ":file_folder:"
-    if path.suffix != "":
-        file_icons = [":koala:", ":honeybee:", ":kiwi_fruit:", ":herb:", ":wave:"]
-        return file_icons[ord(path.suffix[-1]) % len(file_icons)]
-    return ":alien_monster:"
+    return icons.icons[path.suffix.lower()]
