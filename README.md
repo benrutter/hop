@@ -1,41 +1,26 @@
 # Hop!
-Hop is a python-written terminal based file explorer with support for windows/unix.
 
-![screenshot](https://github.com/houseofleft/hop/blob/master/readme_files/hop_scrot.png)
+Hop is a terminal based file explorer designed to be fast, simple and user friendly. Hop runs on any operating system.
+
+![demo](docs/demo.gif)
 
 ## Use
-Once Hop installed, it can be ran at any point in the terminal by typing 'hop' - this will bring you into the file explorer.
+Once Hop installed, it can be ran at any point in the terminal by typing ```hop```. This will bring you into the file explorer.
 
-Functionality is intentionally pretty minimal, you can move around files a lot fast/easier than you can with "cd" and "ls/dir" commands. It has native functionality to help you move, copy and delete multiple files, alongside letting you run shell scripts.
+Anything you type will filter the files, and pressing enter will navigate into a selected folder.
 
-Press "#" if you need help with the controls, but the controls are:
+Typing ```+``` at the end of your input, and pressing enter will add a selected item into your "inventory".
 
-**arrow keys or h, j, k, l (vim keys)** to move around folders
+You can delete, copy or move the files into your current folder by typing ```!delete```, ```!copy``` or ```!move``` and pressing enter. Deleting will move to the recycle bin.
 
-**f** will add the current file/folder to your selection
+Empty your inventory (i.e. clear your selection) with ```!empty``` or ```!e```, and quit with ```!q``` or ```!quit```.
 
-**d** will clear your selection
-
-**s** will run a Hop command (move, copy, delete) on your selection
-
-**a** to enter shell prompt *(this will let you run any commands normally allowed in your shell such as "vim new_file.txt" or "grep something")*
-
-**.** will toggle whether hidden (dot files) are shown
-
-**q** will exit hop and bring you back to the terminal
-
+Otherwise, run any normal shell commands (i.e. vim, mkdir, rm etc) by using the ! prefix, such as ```!mkdir cool-files```
 
 ## Installation
-The only requirement for running Hop is python. It can be installed with pip, if you're installing through windows run:
+The only requirement for running Hop is python. It can be installed with pip, with optional dependencies for unix (apple/linux):
 ```
-python -m pip install hop-file-browser
+pip install hop-file-browser
+pip install 'hop-file-browser[unix]'
 ```
-Unix systems have an additional requirement (the getch module) so can be installed for with:
-```
-python -m pip install hop-file-browser[unix]
-```
-or if required (for some setups, this might be needed to allow a runnable command line script)
-```
-sudo python -m pip install hop-file-browser[unix]
-```
-
+Consider using pipx to install into an isolated environment.
