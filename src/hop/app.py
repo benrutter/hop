@@ -75,6 +75,7 @@ class HopApp:
     def add_to_inventory(self) -> None:
         if len(self.files) > 0 and self.files[0] not in self.inventory:
             self.inventory += [self.files[0]]
+        self.input_str = ""
 
     def empty_inventory(self) -> None:
         self.inventory = []

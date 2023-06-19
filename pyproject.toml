@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "hop"
+name = "hop-file-browser"
 dynamic = ["version"]
 description = "An intuitive and fast terminal file browser"
 readme = "README.md"
