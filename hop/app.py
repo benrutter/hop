@@ -133,14 +133,16 @@ class HopApp:
 
     def process_keys(self) -> None:
         key = getch()
+        if isinstance(key, bytes):
+            key = key.decode()
         key_code = ord(key)
-        if key_code == 10 and self.input_str.startswith("!"):
+        if (key_code == 10 or key_code == 13) and self.input_str.startswith("!"):
             self.run_command()
-        elif key_code == 10 and self.input_str.endswith("+"):
+        elif (key_code == 10 or key_code == 13) and self.input_str.endswith("+"):
             self.add_to_inventory()
-        elif key_code == 10:
+        elif key_code == 10 or key_code == 13:
             self.chdir()
-        elif key_code == 127:
+        elif key_code == 127 or key_code == 8:
             self.backspace()
             self.message = ""
         else:
