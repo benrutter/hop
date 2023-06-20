@@ -39,7 +39,7 @@ Issues = "https://github.com/benrutter/hop/issues"
 Source = "https://github.com/benrutter/hop"
 
 [tool.hatch.version]
-path = "src/hop/__about__.py"
+path = "hop/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -149,11 +149,11 @@ source_pkgs = ["hop", "tests"]
 branch = true
 parallel = true
 omit = [
-  "src/hop/__about__.py",
+  "hop/__about__.py",
 ]
 
 [tool.coverage.paths]
-hop = ["src/hop", "*/hop/src/hop"]
+hop = ["hop", "*/hop"]
 tests = ["tests", "*/hop/tests"]
 
 [tool.coverage.report]
