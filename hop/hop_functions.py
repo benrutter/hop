@@ -17,7 +17,7 @@ def copy_files(files: List[Path]) -> str:
             shutil.copy(i, f"{i.stem}{i.suffix}")
         except:
             not_copied.append(str(i))
-    if len(not_copied) > 0:
+    if not_copied:
         return "[red bold]Could not copy:\n" + "\n".join(not_copied) + "[/red bold]"
     else:
         return "[green]Files in inventory copied[/green]"
@@ -33,7 +33,7 @@ def delete_files(files: List[Path]) -> str:
             send2trash(i)
         except:
             not_deleted.append(str(i))
-    if len(not_deleted) > 0:
+    if not_deleted:
         return "[red bold]Could not delete:\n" + "\n".join(not_deleted) + "[/red bold]"
     else:
         return "[green]Files in inventory deleted[/green]"
@@ -49,7 +49,7 @@ def move_files(files: List[Path]) -> str:
             shutil.move(i, f"{i.stem}{i.suffix}")
         except:
             not_moved.append(str(i))
-    if len(not_moved) > 0:
+    if not_moved:
         return "[red bold]Could not move:\n" + "\n".join(not_moved) + "[/red bold]"
     else:
         return "[green]Files in inventory moved[/green]"
