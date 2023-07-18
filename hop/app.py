@@ -41,6 +41,8 @@ class HopApp:
         search_str = self.input_str.lower().strip()
         if search_str.endswith("+"):
             search_str = search_str[:-1]
+        elif search_str.endswith("+*"):
+            search_str = search_str[:-2]
         files = [i for i in self.files if search_str in str(i).lower()]
         files.sort(key=lambda x: hf.levenshtein_distance(search_str, str(x)))
         self.files = files
@@ -75,6 +77,11 @@ class HopApp:
     def add_to_inventory(self) -> None:
         if len(self.files) > 0 and self.files[0] not in self.inventory:
             self.inventory += [self.files[0]]
+        self.input_str = ""
+
+    def add_all_to_inventory(self) -> None:
+        for file in self.files:
+            self.inventory += [file]
         self.input_str = ""
 
     def empty_inventory(self) -> None:
@@ -140,6 +147,8 @@ class HopApp:
             self.run_command()
         elif key_code in {10, 13} and self.input_str.endswith("+"):
             self.add_to_inventory()
+        elif key_code in {10, 13} and self.input_str.endswith("+*"):
+            self.add_all_to_inventory()
         elif key_code in {10, 13}:
             self.chdir()
         elif key_code in {127, 8}:
